@@ -1,0 +1,434 @@
+openapi: 3.0.3
+info:
+  title: Dashboard API
+  description: The backend API service for the Dashboard project.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local Development Server
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User Login
+      description: Authenticate and receive JWT tokens.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: "123456"
+      responses:
+        '200':
+          description: Login successful, returns user info and tokens.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+        '400':
+          description: Bad Request, username or password not provided.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden, username or password incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/codes:
+    get:
+      tags:
+        - Auth
+      summary: Get User Access Codes
+      description: Retrieves access codes for the currently authenticated user.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved access codes.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/user/info:
+    get:
+      tags:
+        - User
+      summary: Get User Info
+      description: Retrieves information for the currently authenticated user.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved user information.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/system/dept/list:
+    get:
+      tags:
+        - System
+      summary: Get Department List
+      description: Retrieves a list of departments, possibly filtered.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved department list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Department'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/system/dept:
+    post:
+      tags:
+        - System
+      summary: Create Department
+      description: Creates a new department.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Department'
+      responses:
+        '200':
+          description: Successfully created department.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/system/exchanges:
+    get:
+      tags:
+        - System
+      summary: Get API Key List
+      description: Retrieves a list of all API Keys.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved API Key list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ApiKey'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - System
+      summary: Create API Key
+      description: Creates a new API Key.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKey'
+      responses:
+        '200':
+          description: Successfully created API Key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/system/exchanges/{id}:
+    put:
+      tags:
+        - System
+      summary: Update API Key
+      description: Updates an existing API Key.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKey'
+      responses:
+        '200':
+          description: Successfully updated API Key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - System
+      summary: Delete API Key
+      description: Deletes an API Key.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully deleted API Key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/trading-pairs/{exchange_name}:
+    get:
+      tags:
+        - trading-pairs
+      summary: Get Trading Pairs by Exchange
+      description: Retrieves a list of trading pairs for a given exchange.
+      parameters:
+        - name: exchange_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved trading pairs.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TradingPair'
+        '404':
+          description: Exchange not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    # Generic response structure for success
+    SuccessResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Status code, 0 for success.
+          example: 0
+        data:
+          type: object
+        message:
+          type: string
+          description: Response message.
+          example: ok
+    # Generic response structure for error
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Status code, -1 for error.
+          example: -1
+        data:
+          type: 'null'
+          example: null
+        error:
+          type: object
+        message:
+          type: string
+          description: Error message.
+    # User Information
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User ID.
+        username:
+          type: string
+          description: Username.
+        roles:
+          type: array
+          items:
+            type: string
+          description: A list of role identifiers.
+    # Department Information
+    Department:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Department ID.
+        pid:
+          type: string
+          description: Parent Department ID, 0 for root.
+        name:
+          type: string
+          description: Department name.
+        status:
+          type: integer
+          description: 'Status, 0: disabled, 1: enabled.'
+          enum: [0, 1]
+        createTime:
+          type: string
+          format: date-time
+          description: Creation timestamp.
+        remark:
+          type: string
+          description: Remarks.
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Department'
+    # API Key Information
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: API Key ID.
+        exchange:
+          type: string
+          description: Exchange identifier.
+        accountType:
+          type: string
+          description: 'Account type, e.g., futures, spot.'
+          enum: [futures, spot]
+        accountName:
+          type: string
+          description: Custom label for the API Key.
+        apiKey:
+          type: string
+          description: The API access key.
+        status:
+          type: string
+          description: 'Status, e.g., active, inactive.'
+          enum: [active, inactive]
+        lastUsed:
+          type: string
+          format: date-time
+          description: Last usage timestamp.
+        exchangeName:
+          type: string
+          description: Display name for the exchange.
+    # Trading Pair Information
+    TradingPair:
+      type: object
+      properties:
+        exchange_name:
+          type: string
+          description: Exchange identifier.
+        trading_pairs:
+          type: array
+          items:
+            type: string
+          description: A list of trading pairs.
+  securitySchemes:
+    # JWT Bearer Token Authentication
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
