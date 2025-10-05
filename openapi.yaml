@@ -308,6 +308,121 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v6-single/backtest:
+    get:
+      tags:
+        - v6-single-backtest
+      summary: Get a list of single backtests
+      responses:
+        '200':
+          description: A list of backtests
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/V6SingleBacktest'
+    post:
+      tags:
+        - v6-single-backtest
+      summary: Create a new single backtest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V6SingleBacktestCreate'
+      responses:
+        '200':
+          description: The created backtest
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/V6SingleBacktest'
+  /api/v6-single/backtest/{backtest_id}:
+    get:
+      tags:
+        - v6-single-backtest
+      summary: Get a single backtest by ID
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The requested backtest
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/V6SingleBacktest'
+        '404':
+          description: Backtest not found
+    put:
+      tags:
+        - v6-single-backtest
+      summary: Update a single backtest
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V6SingleBacktestUpdate'
+      responses:
+        '200':
+          description: The updated backtest
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/V6SingleBacktest'
+        '404':
+          description: Backtest not found
+    delete:
+      tags:
+        - v6-single-backtest
+      summary: Delete a single backtest
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Backtest deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Backtest not found
 components:
   schemas:
     # Generic response structure for success
@@ -426,6 +541,86 @@ components:
           items:
             type: string
           description: A list of trading pairs.
+    V6SingleBacktest:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        account_name:
+          type: string
+        exchange:
+          type: string
+        symbol:
+          type: string
+        market_type:
+          type: string
+        mode:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        initial_capital:
+          type: number
+          format: float
+        status:
+          type: string
+    V6SingleBacktestCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        account_name:
+          type: string
+        exchange:
+          type: string
+        symbol:
+          type: string
+        market_type:
+          type: string
+        mode:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        initial_capital:
+          type: number
+          format: float
+        status:
+          type: string
+    V6SingleBacktestUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        account_name:
+          type: string
+        exchange:
+          type: string
+        symbol:
+          type: string
+        market_type:
+          type: string
+        mode:
+          type: string
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        initial_capital:
+          type: number
+          format: float
+        status:
+          type: string
   securitySchemes:
     # JWT Bearer Token Authentication
     BearerAuth:
