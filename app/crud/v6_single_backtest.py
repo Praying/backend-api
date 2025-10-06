@@ -1,11 +1,16 @@
 import os
 import json
+import subprocess
+import shlex
+import platform
+from pathlib import PurePath
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from app.models.v6_single_backtest import V6SingleBacktest
 from app.schemas.v6_single_backtest import V6SingleBacktestCreate, V6SingleBacktestUpdate
 from sqlalchemy.inspection import inspect
 from datetime import datetime
+from app.crud.preference import get_preference
 
 def _to_dict(obj):
     """
@@ -67,31 +72,44 @@ async def start_backtest(db: AsyncSession, backtest_id: int):
     """
     Starts a backtest by creating configuration files and updating its status.
     """
-    # 1. Ensure the queue directory exists
+    # 1. Ensure the queue and log directories exist
     queue_dir = "data/bt_v6_single_queue"
+    log_dir = "data/bt_v6_single_queue"
     os.makedirs(queue_dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)
 
     # 2. Get the backtest record
     backtest = await get_v6_single_backtest(db, backtest_id)
     if not backtest:
         return None
 
-    # 3. Write backtest info to a JSON file
+    preference = await get_preference(db)
+    pb6venv = preference.pbv6_interpreter_path if preference else None
+    pb6dir = preference.pbv6_path if preference else None
+
+    if not pb6venv or not pb6dir:
+        raise ValueError("Interpreter path or Passivbot v6 path not configured in preferences.")
+
+    # 3. Define file paths
     file_name = backtest.name
-    json_path = os.path.join(queue_dir, f"{file_name}.json")
-    cfg_path = os.path.join(queue_dir, f"{file_name}.json.cfg")
+    cfg_path = os.path.abspath(os.path.join(queue_dir, f"{file_name}.json"))
+    log_path = os.path.abspath(os.path.join(log_dir, f"{file_name}.log"))
 
-    backtest_dict = _to_dict(backtest)
-
-    with open(json_path, 'w') as f:
-        json.dump(backtest_dict, f, indent=4)
-
-    # 4. Create an empty .cfg file
-    with open(cfg_path, 'w') as f:
-        json.dump({}, f)
+    # 4. Run the backtest process
+    cmd = [pb6venv, '-u', str(PurePath(f'{pb6dir}/backtest.py'))]
+    cmd_end = f'-dp -u {backtest.account_name} -s {backtest.symbol} -sd {backtest.start_date.strftime("%Y-%m-%d")} -ed {backtest.end_date.strftime("%Y-%m-%d")} -sb {backtest.initial_capital} -m {backtest.market_type}'
+    cmd.extend(shlex.split(cmd_end))
+    cmd.extend(['-bd', str(PurePath(f'{pb6dir}/backtests/pbgui')), str(PurePath(cfg_path))])
+    
+    log = open(log_path, "w")
+    if platform.system() == "Windows":
+        creationflags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW
+        subprocess.Popen(cmd, stdout=log, stderr=log, cwd=pb6dir, text=True, creationflags=creationflags)
+    else:
+        subprocess.Popen(cmd, stdout=log, stderr=log, cwd=pb6dir, text=True, start_new_session=True)
 
     # 5. Update the backtest status to 'RUNNING'
-    q = update(V6SingleBacktest).where(V6SingleBacktest.id == backtest_id).values(status="RUNNING")
+    q = update(V6SingleBacktest).where(V6SingleBacktest.id == backtest_id).values(status="running")
     await db.execute(q)
     await db.commit()
 

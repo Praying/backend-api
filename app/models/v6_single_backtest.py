@@ -15,4 +15,4 @@ class V6SingleBacktest(Base):
     start_date = Column(DateTime)
     end_date = Column(DateTime)
     initial_capital = Column(Float)
-    status = Column(String, default='CREATED')
+    status = Column(String, default='created')
