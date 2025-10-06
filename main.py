@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from app.api.endpoints import auth, user, system, trading_pairs, v6_single_backtest
 from app.database.init_db import init_db
@@ -6,6 +7,8 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def on_startup():
+    # Ensure the data directory exists
+    os.makedirs("data", exist_ok=True)
     await init_db()
 
 app.include_router(auth.router)
