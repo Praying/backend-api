@@ -423,6 +423,78 @@ paths:
                 $ref: '#/components/schemas/SuccessResponse'
         '404':
           description: Backtest not found
+  /api/v6-single/backtest/{backtest_id}/start:
+    post:
+      tags:
+        - v6-single-backtest
+      summary: Start a single backtest
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The backtest has been started
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/V6SingleBacktest'
+        '404':
+          description: Backtest not found
+  /api/system/preferences:
+    get:
+      tags:
+        - preferences
+      summary: Read Preference
+      description: Retrieve the current preference settings.
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Preference'
+        '404':
+          description: Preference not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - preferences
+      summary: Create Or Update Preference
+      description: Create or update the preference settings.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferenceCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Preference'
 components:
   schemas:
     # Generic response structure for success
@@ -621,6 +693,45 @@ components:
           format: float
         status:
           type: string
+    Preference:
+      type: object
+      properties:
+        id:
+          type: integer
+        pbv6_path:
+          type: string
+          nullable: true
+        pbv6_interpreter_path:
+          type: string
+          nullable: true
+        pbv7_path:
+          type: string
+          nullable: true
+        pbv7_interpreter_path:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+    PreferenceCreate:
+      type: object
+      properties:
+        pbv6_path:
+          type: string
+          nullable: true
+        pbv6_interpreter_path:
+          type: string
+          nullable: true
+        pbv7_path:
+          type: string
+          nullable: true
+        pbv7_interpreter_path:
+          type: string
+          nullable: true
   securitySchemes:
     # JWT Bearer Token Authentication
     BearerAuth:

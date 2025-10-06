@@ -53,3 +53,16 @@ async def delete_v6_single_backtest(
     if not result:
         raise HTTPException(status_code=404, detail="Backtest not found")
     return {"code": 0, "data": None, "message": "ok"}
+
+@router.post("/{backtest_id}/start")
+async def start_v6_single_backtest(
+    backtest_id: int,
+    db: AsyncSession = Depends(dependencies.get_db),
+):
+    """
+    Start a backtest task.
+    """
+    db_backtest = await crud.start_backtest(db, backtest_id=backtest_id)
+    if db_backtest is None:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+    return {"code": 0, "data": db_backtest, "message": "Backtest started successfully"}

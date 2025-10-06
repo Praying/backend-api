@@ -1,8 +1,9 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
 
 class V6SingleBacktestBase(BaseModel):
+    config: Optional[dict] = None
     name: Optional[str] = None
     account_name: Optional[str] = None
     exchange: Optional[str] = None
@@ -15,6 +16,7 @@ class V6SingleBacktestBase(BaseModel):
     status: Optional[str] = None
 
 class V6SingleBacktestCreate(V6SingleBacktestBase):
+    config: dict
     name: str
     account_name: str
     exchange: str
