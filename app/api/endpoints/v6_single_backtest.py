@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import dependencies
 from app.crud import v6_single_backtest as crud
@@ -57,12 +57,24 @@ async def delete_v6_single_backtest(
 @router.post("/{backtest_id}/start")
 async def start_v6_single_backtest(
     backtest_id: int,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(dependencies.get_db),
 ):
     """
-    Start a backtest task.
+    Start a backtest task in the background.
     """
-    db_backtest = await crud.start_backtest(db, backtest_id=backtest_id)
+    db_backtest = await crud.get_v6_single_backtest(db, backtest_id=backtest_id)
     if db_backtest is None:
         raise HTTPException(status_code=404, detail="Backtest not found")
-    return {"code": 0, "data": db_backtest, "message": "Backtest started successfully"}
+
+    # Check if the backtest is already running or starting
+    if db_backtest.status in ["running", "starting"]:
+        raise HTTPException(status_code=400, detail="Backtest is already running.")
+    
+    # Update status to 'starting' immediately
+    await crud.update_backtest_status(db, backtest_id, "starting")
+    
+    # Add the long-running task to the background
+    background_tasks.add_task(crud.run_backtest_process, db, backtest_id)
+    
+    return {"code": 0, "data": None, "message": "Backtest has been started in the background."}
