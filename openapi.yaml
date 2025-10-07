@@ -448,6 +448,32 @@ paths:
                         $ref: '#/components/schemas/V6SingleBacktest'
         '404':
           description: Backtest not found
+  /api/v6-single/backtest/{backtest_id}/log:
+    get:
+      tags:
+        - v6-single-backtest
+      summary: Get log for a single backtest
+      description: Retrieve the log file for a specific backtest.
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The backtest log file.
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Backtest not found or Log file not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/system/preferences:
     get:
       tags:

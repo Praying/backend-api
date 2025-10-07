@@ -1,4 +1,6 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import dependencies
 from app.crud import v6_single_backtest as crud
@@ -78,3 +80,22 @@ async def start_v6_single_backtest(
     background_tasks.add_task(crud.run_backtest_process, db, backtest_id)
     
     return {"code": 0, "data": None, "message": "Backtest has been started in the background."}
+
+@router.get("/{backtest_id}/log")
+async def read_v6_single_backtest_log(
+    backtest_id: int,
+    db: AsyncSession = Depends(dependencies.get_db),
+):
+    """
+    Retrieve the log file for a specific backtest.
+    """
+    db_backtest = await crud.get_v6_single_backtest(db, backtest_id=backtest_id)
+    if db_backtest is None:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+
+    log_path = crud.get_backtest_log_path(db_backtest)
+
+    if not os.path.exists(log_path):
+        raise HTTPException(status_code=404, detail="Log file not found")
+
+    return FileResponse(log_path, media_type='text/plain', filename=f"{db_backtest.name}.log")

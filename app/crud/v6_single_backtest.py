@@ -79,6 +79,12 @@ async def delete_v6_single_backtest(db: AsyncSession, backtest_id: int):
     await db.commit()
     return {"ok": True}
 
+def get_backtest_log_path(backtest: V6SingleBacktest) -> str:
+    """
+    Constructs the log file path for a given backtest.
+    """
+    return f"data/bt_v6_single_queue/{backtest.name}/{backtest.name}.log"
+
 async def update_backtest_status(db: AsyncSession, backtest_id: int, status: str):
     """
     Helper function to update the status of a backtest.
