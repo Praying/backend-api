@@ -1,6 +1,8 @@
 import os
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
+import json
+import pandas as pd
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import dependencies
 from app.crud import v6_single_backtest as crud
@@ -99,3 +101,104 @@ async def read_v6_single_backtest_log(
         raise HTTPException(status_code=404, detail="Log file not found")
 
     return FileResponse(log_path, media_type='text/plain', filename=f"{db_backtest.name}.log")
+
+def get_plots_path(backtest: schemas.V6SingleBacktest) -> str | None:
+    """
+    Constructs the latest plots directory path for a given backtest.
+    """
+    base_path = f"data/bt_v6_single_queue/{backtest.name}"
+    exchange_base = backtest.exchange.split('_')[0]
+    plots_path = os.path.join(base_path, exchange_base, backtest.symbol, 'plots')
+
+    if not os.path.isdir(plots_path):
+        return None
+
+    all_subdirs = [d for d in os.listdir(plots_path) if os.path.isdir(os.path.join(plots_path, d))]
+    if not all_subdirs:
+        return None
+
+    latest_subdir = max(all_subdirs)
+    return os.path.join(plots_path, latest_subdir)
+
+
+@router.get("/{backtest_id}/stats")
+async def get_backtest_stats(
+    backtest_id: int,
+    db: AsyncSession = Depends(dependencies.get_db),
+):
+    """
+    Retrieve the statistics data for a specific backtest to render charts.
+    """
+    db_backtest = await crud.get_v6_single_backtest(db, backtest_id=backtest_id)
+    if db_backtest is None:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+
+    plots_dir = get_plots_path(db_backtest)
+    if plots_dir is None:
+        raise HTTPException(status_code=404, detail="Plots directory not found")
+        
+    csv_path = os.path.join(plots_dir, 'stats.csv')
+
+    if not os.path.exists(csv_path):
+        raise HTTPException(status_code=404, detail="Stats file not found")
+
+    try:
+        df = pd.read_csv(csv_path)
+        json_data = df.to_dict(orient='records')
+        return {"code": 0, "data": json_data, "message": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process stats file: {str(e)}")
+
+
+@router.get("/{backtest_id}/result")
+async def get_backtest_result(
+    backtest_id: int,
+    db: AsyncSession = Depends(dependencies.get_db),
+):
+    """
+    Retrieve the backtest result text file for a specific backtest.
+    """
+    db_backtest = await crud.get_v6_single_backtest(db, backtest_id=backtest_id)
+    if db_backtest is None:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+
+    plots_dir = get_plots_path(db_backtest)
+    if plots_dir is None:
+        raise HTTPException(status_code=404, detail="Plots directory not found")
+        
+    result_path = os.path.join(plots_dir, 'backtest_result.txt')
+
+    if not os.path.exists(result_path):
+        raise HTTPException(status_code=404, detail="Result file not found")
+
+    try:
+        with open(result_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return {"code": 0, "data": content, "message": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process result file: {str(e)}")
+
+
+@router.get("/{backtest_id}/config")
+async def get_backtest_config(
+    backtest_id: int,
+    db: AsyncSession = Depends(dependencies.get_db),
+):
+    """
+    Retrieve the configuration JSON file for a specific backtest.
+    """
+    db_backtest = await crud.get_v6_single_backtest(db, backtest_id=backtest_id)
+    if db_backtest is None:
+        raise HTTPException(status_code=404, detail="Backtest not found")
+
+    config_path = f"data/bt_v6_single_queue/{db_backtest.name}/{db_backtest.name}.json"
+
+    if not os.path.exists(config_path):
+        raise HTTPException(status_code=404, detail="Config file not found")
+
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+        return {"code": 0, "data": config_data, "message": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process config file: {str(e)}")

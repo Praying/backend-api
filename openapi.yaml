@@ -474,6 +474,116 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v6-single/backtest/{backtest_id}/stats:
+    get:
+      tags:
+        - v6-single-backtest
+      summary: Get stats data for a single backtest
+      description: Retrieve the statistics data for a specific backtest to render charts.
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The statistics data in JSON format.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+  /api/v6-single/backtest/{backtest_id}/result:
+    get:
+      tags:
+        - v6-single-backtest
+      summary: Get result text for a single backtest
+      description: Retrieve the backtest result text file for a specific backtest.
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The backtest result text.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+  /api/v6-single/backtest/{backtest_id}/config:
+    get:
+      tags:
+        - v6-single-backtest
+      summary: Get config JSON for a single backtest
+      description: Retrieve the configuration JSON file for a specific backtest.
+      parameters:
+        - name: backtest_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The configuration data in JSON format.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+        '404':
+          description: Backtest not found or Config file not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to process config file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                      data:
+                        type: string
+        '404':
+          description: Backtest not found or Result file not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to process result file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+                      data:
+                        type: array
+                        items:
+                          type: object
+        '404':
+          description: Backtest not found or Stats file not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Failed to process stats file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/system/preferences:
     get:
       tags:
