@@ -3,3 +3,4 @@ from .auth import LoginRequest, Token
 from .department import Department, DepartmentCreate
 from .user import User, UserCreate
 from .trading_pair import TradingPair, TradingPairCreate
+from .coinmarket import CoinMarketCap, CoinMarketCapCreate, CoinMarketCapUpdate

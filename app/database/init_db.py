@@ -4,6 +4,7 @@ from app.models.user import User
 from app.models.department import Department
 from app.models.api_key import ApiKey
 from app.models.v6_single_backtest import V6SingleBacktest
+from app.models.coinmarket import CoinMarketCap
 from app.crud.user import get_user_by_username, create_user
 from app.schemas.user import UserCreate
 from app.database.session import SessionLocal

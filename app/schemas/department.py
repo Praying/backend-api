@@ -18,7 +18,7 @@ class Department(DepartmentBase):
     children: List['Department'] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 Department.update_forward_refs()
 

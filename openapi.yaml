@@ -631,6 +631,58 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/Preference'
+  /api/system/coinmarket:
+    get:
+      tags:
+        - System
+      summary: Get CoinMarketCap Config
+      description: Retrieves the current CoinMarketCap API configuration.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successfully retrieved CoinMarketCap configuration.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CoinMarketCap'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - System
+      summary: Create or Update CoinMarketCap Config
+      description: Creates or updates the CoinMarketCap API configuration.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoinMarketCapCreate'
+      responses:
+        '200':
+          description: Successfully saved CoinMarketCap configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized, token is missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     # Generic response structure for success
@@ -846,6 +898,30 @@ components:
         pbv7_interpreter_path:
           type: string
           nullable: true
+    CoinMarketCap:
+      type: object
+      properties:
+        id:
+          type: integer
+        coin_market_cap_api_key:
+          type: string
+        fetch_limit:
+          type: integer
+        fetch_interval:
+          type: integer
+        metadata_interval:
+          type: integer
+    CoinMarketCapCreate:
+      type: object
+      properties:
+        coin_market_cap_api_key:
+          type: string
+        fetch_limit:
+          type: integer
+        fetch_interval:
+          type: integer
+        metadata_interval:
+          type: integer
         created_at:
           type: string
           format: date-time

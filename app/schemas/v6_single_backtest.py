@@ -34,4 +34,4 @@ class V6SingleBacktest(V6SingleBacktestBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

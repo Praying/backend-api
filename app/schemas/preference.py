@@ -9,7 +9,7 @@ class PreferenceBase(BaseModel):
     pbv7_interpreter_path: Optional[str] = None
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 class PreferenceCreate(PreferenceBase):
     pass
@@ -23,4 +23,4 @@ class Preference(PreferenceBase):
     updated_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True

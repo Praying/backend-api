@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI
-from app.api.endpoints import auth, user, system, trading_pairs, v6_single_backtest, preference
+from app.api.endpoints import auth, user, system, trading_pairs, v6_single_backtest, preference, coinmarket
 from app.database.init_db import init_db
 
 app = FastAPI()
@@ -17,4 +17,5 @@ app.include_router(system.router)
 app.include_router(trading_pairs.router, prefix="/api/trading-pairs", tags=["trading-pairs"])
 app.include_router(v6_single_backtest.router, prefix="/api/v6-single/backtest", tags=["v6-single-backtest"])
 app.include_router(preference.router, prefix="/api/system/preferences", tags=["preferences"])
+app.include_router(coinmarket.router, prefix="/api/system/coinmarket", tags=["coinmarket"])
 # Trigger reload
