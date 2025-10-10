@@ -17,5 +17,5 @@ app.include_router(system.router)
 app.include_router(trading_pairs.router, prefix="/api/trading-pairs", tags=["trading-pairs"])
 app.include_router(v6_single_backtest.router, prefix="/api/v6-single/backtest", tags=["v6-single-backtest"])
 app.include_router(preference.router, prefix="/api/system/preferences", tags=["preferences"])
-app.include_router(coinmarket.router, prefix="/api/system/coinmarket", tags=["coinmarket"])
+app.include_router(coinmarket.router, prefix="/api/information/coin-data/key", tags=["coinmarket"])
 # Trigger reload

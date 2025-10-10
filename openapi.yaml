@@ -631,10 +631,10 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/Preference'
-  /api/system/coinmarket:
+  /api/information/coin-data/key:
     get:
       tags:
-        - System
+        - coinmarket
       summary: Get CoinMarketCap Config
       description: Retrieves the current CoinMarketCap API configuration.
       security:
@@ -659,7 +659,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
     post:
       tags:
-        - System
+        - coinmarket
       summary: Create or Update CoinMarketCap Config
       description: Creates or updates the CoinMarketCap API configuration.
       security:
@@ -683,6 +683,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/information/coin-data/key/verify:
+    post:
+      tags:
+        - coinmarket
+      summary: Verify CoinMarketCap API Key
+      description: Verifies if the provided CoinMarketCap API key is valid.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - coin_market_cap_api_key
+              properties:
+                coin_market_cap_api_key:
+                  type: string
+                  example: "your-api-key"
+      responses:
+        '200':
+          description: API Key validity check result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
 components:
   schemas:
     # Generic response structure for success

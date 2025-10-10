@@ -11,3 +11,4 @@ fastapi-cli
 
 greenlet
 pandas
+requests
